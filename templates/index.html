@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semantic SEO Dashboard</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        .section-block {
+            margin-bottom: 48px;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .section-header h2 {
+            font-size: 20px;
+            color: #444;
+            margin-bottom: 12px;
+        }
+        .btn-seo {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-seo:hover {
+            background-color: #0056b3;
+        }
+        .btn-optimized {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-optimized:hover {
+            background-color: #1e7e34;
+        }
+        .btn-optimized:disabled, .btn-seo:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .divider {
+            border: none;
+            border-top: 2px dashed #dee2e6;
+            margin: 40px 0;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Section 1: Run SEO ── -->
+    <div class="section-block">
+        <div class="section-header">
+            <h2>Raw SEO Results</h2>
+            <button id="btnRunSEO" class="btn-seo" onclick="runSEOProcess()">Run SEO Processing</button>
+        </div>
+
+        <div class="grid-container">
+            <!-- Section 1: Raw JSON Data -->
+            <div class="card">
+                <h3>1. Loaded Video Data</h3>
+                <pre id="jsonContent">Click "Run SEO Processing" to load video_data.json...</pre>
+            </div>
+
+            <!-- Section 2: Parser Results -->
+            <div class="card">
+                <h3>2. Parser Results</h3>
+                <pre id="parserContent">Awaiting parser output...</pre>
+            </div>
+
+            <!-- Section 3: Category Histogram -->
+            <div class="card">
+                <h3>3. Category Distribution</h3>
+                <canvas id="histogramChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ── Section 2: SEO Optimized ── -->
+    <div class="section-block">
+        <div class="section-header">
+            <h2>SEO Optimized Results</h2>
+            <button id="btnOptimized" class="btn-optimized" onclick="runSEOOptimized()">SEO Optimized</button>
+        </div>
+
+        <div class="grid-container">
+            <!-- Section 1: Raw JSON Data -->
+            <div class="card">
+                <h3>1. Loaded Video Data</h3>
+                <pre id="jsonContentOpt">Click "SEO Optimized" to load video_data.json...</pre>
+            </div>
+
+            <!-- Section 2: Parser Results -->
+            <div class="card">
+                <h3>2. Optimized Parser Results</h3>
+                <pre id="parserContentOpt">Awaiting optimized parser output...</pre>
+            </div>
+
+            <!-- Section 3: Category Histogram -->
+            <div class="card">
+                <h3>3. Category Distribution</h3>
+                <canvas id="histogramChartOpt"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chartInstance = null;
+        let chartInstanceOpt = null;
+
+        async function runSEOProcess() {
+            const btn = document.getElementById('btnRunSEO');
+            btn.disabled = true;
+            btn.innerHTML = 'Running...<span class="spinner"></span>';
+            try {
+                const response = await fetch('/process-seo');
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Section 1: Render video_data.json
+                document.getElementById('jsonContent').textContent = JSON.stringify(data.video_data, null, 2);
+
+                // Section 2: Render parser.py output
+                document.getElementById('parserContent').textContent = JSON.stringify(data.parser_results, null, 2);
+
+                // Section 3: Render Histogram Chart
+                renderChart('histogramChart', data.histogram.category_1, data.histogram.category_2, chartInstance, (inst) => { chartInstance = inst; });
+
+            } catch (err) {
+                console.error("Error executing SEO processing:", err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Run SEO Processing';
+            }
+        }
+
+        async function runSEOOptimized() {
+            const btn = document.getElementById('btnOptimized');
+            btn.disabled = true;
+            btn.innerHTML = 'Optimizing...<span class="spinner"></span>';
+            try {
+                const response = await fetch('/process-seo-optimized');
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Section 1: Render video_data.json
+                document.getElementById('jsonContentOpt').textContent = JSON.stringify(data.video_data, null, 2);
+
+                // Section 2: Render optimized parser output
+                document.getElementById('parserContentOpt').textContent = JSON.stringify(data.parser_results, null, 2);
+
+                // Section 3: Render Histogram Chart
+                renderChart('histogramChartOpt', data.histogram.category_1, data.histogram.category_2, chartInstanceOpt, (inst) => { chartInstanceOpt = inst; });
+
+            } catch (err) {
+                console.error("Error executing SEO optimized processing:", err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'SEO Optimized';
+            }
+        }
+
+        function renderChart(canvasId, cat1Count, cat2Count, existingInstance, setInstance) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            if (existingInstance) {
+                existingInstance.destroy();
+            }
+
+            const newInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Category 1', 'Category 2'],
+                    datasets: [{
+                        label: 'Result Count',
+                        data: [cat1Count, cat2Count],
+                        backgroundColor: ['#36A2EB', '#FF6384'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+
+            setInstance(newInstance);
+        }
+    </script>
+</body>
+</html>
