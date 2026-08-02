@@ -1,4 +1,4 @@
-| Figure 1 | Figure 2 |
+| Figure 1. Google Search Results | Figure 2. AI Search Results |
 | :---: | :---: |
 | ![Figure 1](google_ui.png) | ![Figure 2](ai_ui.png) |
 
@@ -10,8 +10,8 @@ Topic Extraction: Leveraged Large Language Models (LLMs) to extract and summariz
 
 Content Optimization: Employed LLMs to rephrase titles and descriptions of underperforming courses, aligning them with high-performing semantic topics to improve visibility and engagement.
 
-| Figure 3 
-| ![Figure 1](raw_seo.png) 
+Figure 3. Raw Text Categorization
+![Figure 3](raw_seo.png) 
 
-| Figure 4
-| ![Figure 2](ai_ui.png) |
+Figure 4. SEO-Optimized Text Categorization
+![Figure 4](semantic_seo.png) |
